@@ -23,8 +23,6 @@ from vocode.streaming.models.events import Sender
 from vocode.streaming.models.transcript import Transcript
 from vocode.streaming.vector_db.factory import VectorDBFactory
 
-from vocode.utils.transcripts.call_transcript_utils import add_transcript
-
 
 class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
     def __init__(
@@ -96,6 +94,7 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
         return parameters
 
     def create_first_response(self, first_prompt):
+        print("Entered create_first_response()")
         messages = [
             (
                 [{"role": "system", "content": self.agent_config.prompt_preamble}]
@@ -106,10 +105,12 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
         ]
 
         parameters = self.get_chat_parameters(messages)
+        print(f"create_first_response(): first_prompt: {first_prompt}, messages: {messages}, parameters: {parameters}")
         return openai.ChatCompletion.create(**parameters)
 
     def attach_transcript(self, transcript: Transcript):
         self.transcript = transcript
+        print(f"attach_transcript: {self.transcript}")
 
     async def respond(
         self,
@@ -117,6 +118,8 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
         conversation_id: str,
         is_interrupt: bool = False,
     ) -> Tuple[str, bool]:
+        print("Entered respond()")
+        print(f"human_input: {human_input}, conversation_id: {conversation_id}, is_interrupt: {is_interrupt}")
         assert self.transcript is not None
         if is_interrupt and self.agent_config.cut_off_response:
             cut_off_response = self.get_cut_off_response()
@@ -131,8 +134,7 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
             chat_parameters = self.get_chat_parameters()
             chat_completion = await openai.ChatCompletion.acreate(**chat_parameters)
             text = chat_completion.choices[0].message.content
-        self.logger.debug(f"LLM response: {text}")
-        add_transcript(self.conversation_id, self.transcript.to_string())
+        print(f"LLM response: {text}")
         return text, False
 
     async def generate_response(
@@ -141,6 +143,8 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
         conversation_id: str,
         is_interrupt: bool = False,
     ) -> AsyncGenerator[Tuple[Union[str, FunctionCall], bool], None]:
+        print("Entered generate_response()")
+        print(f"human_input: {human_input}, conversation_id: {conversation_id}, is_interrupt: {is_interrupt}")
         if is_interrupt and self.agent_config.cut_off_response:
             cut_off_response = self.get_cut_off_response()
             yield cut_off_response, False

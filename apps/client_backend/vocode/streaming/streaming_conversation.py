@@ -68,7 +68,22 @@ from vocode.streaming.utils.worker import (
     InterruptibleWorker,
 )
 
+from vocode.utils.transcripts.call_transcript_utils import add_transcript
+
 OutputDeviceType = TypeVar("OutputDeviceType", bound=BaseOutputDevice)
+
+
+def log_attributes(obj, prefix='', id=None, depth=0, max_depth=5):
+    if depth > max_depth:
+        add_transcript(id, f"{prefix}... Max recursion depth reached")
+        return
+
+    for attr, value in obj.__dict__.items():
+        if hasattr(value, '__dict__'):
+            add_transcript(id, f"{prefix}{attr}: <Object>")
+            log_attributes(value, prefix=f"{prefix}{attr}.", id=id, depth=depth+1, max_depth=max_depth)
+        else:
+            add_transcript(id, f"{prefix}{attr}: {value}")
 
 
 class StreamingConversation(Generic[OutputDeviceType]):
@@ -123,7 +138,11 @@ class StreamingConversation(Generic[OutputDeviceType]):
                 return
             if transcription.is_final:
                 self.conversation.logger.debug(
-                    "Got transcription: {}, confidence: {}".format(
+                    "User: {} - (confidence: {})".format(
+                        transcription.message, transcription.confidence
+                    )
+                )
+                add_transcript(self.conversation.id, "User: {} - (confidence: {})".format(
                         transcription.message, transcription.confidence
                     )
                 )
@@ -267,6 +286,10 @@ class StreamingConversation(Generic[OutputDeviceType]):
                 return
             try:
                 agent_response = item.payload
+                self.conversation.logger.debug(f"agent_response: {agent_response.message.text}")
+
+                # ADD AURA CLASS HERE
+
                 if isinstance(agent_response, AgentResponseFillerAudio):
                     self.send_filler_audio(item.agent_response_tracker)
                     return
@@ -286,7 +309,8 @@ class StreamingConversation(Generic[OutputDeviceType]):
                     ):
                         await self.conversation.filler_audio_worker.wait_for_filler_audio_to_finish()
 
-                self.conversation.logger.debug("Synthesizing speech for message")
+                #self.conversation.logger.debug("Synthesizing speech for message")
+                self.conversation.logger.debug(f"Bot Sentiment: {self.conversation.bot_sentiment}")
                 synthesis_result = await self.conversation.synthesizer.create_speech(
                     agent_response_message.message,
                     self.chunk_size,
@@ -321,6 +345,8 @@ class StreamingConversation(Generic[OutputDeviceType]):
             try:
                 message, synthesis_result = item.payload
                 # create an empty transcript message and attach it to the transcript
+                self.conversation.logger.debug("Agent: {}".format(message.text))
+                add_transcript(self.conversation.id, "Agent: {}".format(message.text))
                 transcript_message = Message(
                     text="",
                     sender=Sender.BOT,
@@ -343,7 +369,6 @@ class StreamingConversation(Generic[OutputDeviceType]):
                     conversation_id=self.conversation.id,
                 )
                 item.agent_response_tracker.set()
-                self.conversation.logger.debug("Message sent: {}".format(message_sent))
                 if cut_off:
                     self.conversation.agent.update_last_bot_message_on_cut_off(
                         message_sent
@@ -459,6 +484,8 @@ class StreamingConversation(Generic[OutputDeviceType]):
         # tracing
         self.start_time: Optional[float] = None
         self.end_time: Optional[float] = None
+
+        #log_attributes(self, id=self.id)
 
     def create_state_manager(self) -> ConversationStateManager:
         return ConversationStateManager(conversation=self)
@@ -650,9 +677,9 @@ class StreamingConversation(Generic[OutputDeviceType]):
                     0,
                 )
             )
-            self.logger.debug(
-                "Sent chunk {} with size {}".format(chunk_idx, len(chunk_result.chunk))
-            )
+            # self.logger.debug(
+            #     "Sent chunk {} with size {}".format(chunk_idx, len(chunk_result.chunk))
+            # )
             self.mark_last_action_timestamp()
             chunk_idx += 1
             seconds_spoken += seconds_per_chunk

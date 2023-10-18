@@ -47,15 +47,12 @@ class GoodbyeModel:
         self.embeddings_initialized = asyncio.Event()
 
     async def initialize_embeddings(self):
-        print("Debug: Initializing embeddings...")
         self.goodbye_embeddings = await self.load_or_create_embeddings(
             f"{self.embeddings_cache_path}/goodbye_embeddings.npy"
         )
-        print(f"Debug: embeddings_cache_path = {self.embeddings_cache_path}")
         self.embeddings_initialized.set()
 
     async def load_or_create_embeddings(self, path):
-        print(f"Debug: Saving/loading embeddings at {path}")
         if os.path.exists(path):
             return np.load(path)
         else:
@@ -64,7 +61,6 @@ class GoodbyeModel:
             return embeddings
 
     async def create_embeddings(self):
-        print("Creating embeddings...")
         size = EMBEDDING_SIZE
         embeddings = np.empty((size, len(GOODBYE_PHRASES)))
         for i, goodbye_phrase in enumerate(GOODBYE_PHRASES):

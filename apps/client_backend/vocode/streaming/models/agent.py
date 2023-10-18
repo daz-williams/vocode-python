@@ -13,7 +13,8 @@ FILLER_AUDIO_DEFAULT_SILENCE_THRESHOLD_SECONDS = 0.5
 LLM_AGENT_DEFAULT_TEMPERATURE = 1.0
 LLM_AGENT_DEFAULT_MAX_TOKENS = 256
 LLM_AGENT_DEFAULT_MODEL_NAME = "text-curie-001"
-CHAT_GPT_AGENT_DEFAULT_MODEL_NAME = "gpt-3.5-turbo-0613"
+# CHAT_GPT_AGENT_DEFAULT_MODEL_NAME = "gpt-3.5-turbo-0613"
+CHAT_GPT_AGENT_DEFAULT_MODEL_NAME = "gpt-4-0613"
 ACTION_AGENT_DEFAULT_MODEL_NAME = "gpt-3.5-turbo-0613"
 CHAT_ANTHROPIC_DEFAULT_MODEL_NAME = "claude-v1"
 CHAT_VERTEX_AI_DEFAULT_MODEL_NAME = "chat-bison@001"
@@ -41,7 +42,7 @@ class AgentType(str, Enum):
 class FillerAudioConfig(BaseModel):
     silence_threshold_seconds: float = FILLER_AUDIO_DEFAULT_SILENCE_THRESHOLD_SECONDS
     use_phrases: bool = True
-    use_typing_noise: bool = False
+    use_typing_noise: bool = True
 
     @validator("use_typing_noise")
     def typing_noise_excludes_phrases(cls, v, values):
@@ -70,7 +71,7 @@ class AgentConfig(TypedModel, type=AgentType.BASE.value):
     end_conversation_on_goodbye: bool = False
     send_filler_audio: Union[bool, FillerAudioConfig] = False
     webhook_config: Optional[WebhookConfig] = None
-    track_bot_sentiment: bool = False
+    track_bot_sentiment: bool = True
     actions: Optional[List[ActionConfig]] = None
 
 
