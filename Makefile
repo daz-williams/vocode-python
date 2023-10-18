@@ -10,10 +10,25 @@ synthesize:
 	poetry run python playground/streaming/synthesizer/synthesize.py
 
 PYTHON_FILES=.
-lint: PYTHON_FILES=vocode/ quickstarts/ playground/
-lint_diff typecheck_diff: PYTHON_FILES=$(shell git diff --name-only --diff-filter=d main | grep -E '\.py$$')
+# lint: PYTHON_FILES=vocode/ quickstarts/ playground/
+# lint_diff typecheck_diff: PYTHON_FILES=$(shell git diff --name-only --diff-filter=d main | grep -E '\.py$$')
 
-lint lint_diff:
+# lint lint_diff:
+# 	poetry run black $(PYTHON_FILES)
+
+# typecheck:
+# 	poetry run mypy -p vocode
+# 	poetry run mypy -p quickstarts
+# 	poetry run mypy -p apps
+# 	poetry run mypy -p playground
+
+# typecheck_diff:
+# 	poetry run mypy $(PYTHON_FILES)
+
+# test:
+# 	poetry run pytest
+
+lint:
 	poetry run black $(PYTHON_FILES)
 
 typecheck:
@@ -21,12 +36,6 @@ typecheck:
 	poetry run mypy -p quickstarts
 	poetry run mypy -p apps
 	poetry run mypy -p playground
-
-typecheck_diff:
-	poetry run mypy $(PYTHON_FILES)
-
-test:
-	poetry run pytest
 
 help:
 	@echo "Usage: make <target>"

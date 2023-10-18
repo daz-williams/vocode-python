@@ -23,6 +23,8 @@ from vocode.streaming.models.events import Sender
 from vocode.streaming.models.transcript import Transcript
 from vocode.streaming.vector_db.factory import VectorDBFactory
 
+from vocode.utils.transcripts.call_transcript_utils import add_transcript
+
 
 class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
     def __init__(
@@ -120,6 +122,7 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
             cut_off_response = self.get_cut_off_response()
             return cut_off_response, False
         self.logger.debug("LLM responding to human input")
+        print("LLM responding to human input")
         if self.is_first_response and self.first_response:
             self.logger.debug("First response is cached")
             self.is_first_response = False
@@ -129,6 +132,7 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
             chat_completion = await openai.ChatCompletion.acreate(**chat_parameters)
             text = chat_completion.choices[0].message.content
         self.logger.debug(f"LLM response: {text}")
+        add_transcript(self.conversation_id, self.transcript.to_string())
         return text, False
 
     async def generate_response(

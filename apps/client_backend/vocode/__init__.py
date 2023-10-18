@@ -13,5 +13,5 @@ def getenv(key, default=None):
     return environment.get(key) or os.getenv(key, default)
 
 
-api_key = getenv("VOCODE_API_KEY")
-base_url = getenv("VOCODE_BASE_URL", "api.vocode.dev")
+api_key = ""
+base_url = ""

@@ -12,6 +12,10 @@ from vocode.streaming.telephony.constants import (
 from .model import BaseModel, TypedModel
 from .audio_encoding import AudioEncoding
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 
 class SynthesizerType(str, Enum):
     BASE = "synthesizer_base"
@@ -114,7 +118,10 @@ class ElevenLabsSynthesizerConfig(
 
     @validator("voice_id")
     def set_name(cls, voice_id):
-        return voice_id or ELEVEN_LABS_ADAM_VOICE_ID
+        logger.debug(f"voice_id {voice_id}")
+        if not voice_id:
+            return ELEVEN_LABS_ADAM_VOICE_ID
+        return voice_id
 
     @validator("similarity_boost", always=True)
     def stability_and_similarity_boost_check(cls, similarity_boost, values):
@@ -136,7 +143,7 @@ class ElevenLabsSynthesizerConfig(
 
 RIME_DEFAULT_SPEAKER = "young_male_unmarked-1"
 RIME_DEFAULT_SAMPLE_RATE = 22050
-RIME_DEFAULT_BASE_URL = "https://rjmopratfrdjgmfmaios.functions.supabase.co/rime-tts"
+RIME_DEFAULT_BASE_URL = "https://api.rime.ai/functions/v1/rime-tts"
 
 
 class RimeSynthesizerConfig(SynthesizerConfig, type=SynthesizerType.RIME.value):

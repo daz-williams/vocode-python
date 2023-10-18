@@ -15,6 +15,7 @@ from vocode.streaming.models.websocket import (
     AudioConfigStartMessage,
     AudioMessage,
     ReadyMessage,
+    StartMessage,
     WebSocketMessage,
     WebSocketMessageType,
 )
@@ -67,15 +68,16 @@ class ConversationRouter(BaseRouter):
     def get_conversation(
         self,
         output_device: WebsocketOutputDevice,
-        start_message: AudioConfigStartMessage,
+        start_message: StartMessage,
     ) -> StreamingConversation:
         transcriber = self.transcriber_thunk(start_message.input_audio_config)
-        synthesizer = self.synthesizer_thunk(start_message.output_audio_config)
+        synthesizer = self.synthesizer_thunk(start_message.synthesizer_config)
         synthesizer.synthesizer_config.should_encode_as_wav = True
+        agent = self.agent_thunk(start_message.agent_config)
         return StreamingConversation(
             output_device=output_device,
             transcriber=transcriber,
-            agent=self.agent_thunk(),
+            agent=agent,
             synthesizer=synthesizer,
             conversation_id=start_message.conversation_id,
             events_manager=TranscriptEventManager(output_device, self.logger)
@@ -86,10 +88,10 @@ class ConversationRouter(BaseRouter):
 
     async def conversation(self, websocket: WebSocket):
         await websocket.accept()
-        start_message: AudioConfigStartMessage = AudioConfigStartMessage.parse_obj(
+        start_message: StartMessage = StartMessage.parse_obj(
             await websocket.receive_json()
         )
-        self.logger.debug(f"Conversation started")
+        self.logger.debug(f"Conversation started {start_message}")
         output_device = WebsocketOutputDevice(
             websocket,
             start_message.output_audio_config.sampling_rate,

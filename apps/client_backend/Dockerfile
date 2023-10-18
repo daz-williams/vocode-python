@@ -10,6 +10,7 @@ RUN apt-get install -y ffmpeg
 WORKDIR /code
 COPY ./pyproject.toml /code/pyproject.toml
 COPY ./poetry.lock /code/poetry.lock
+COPY ./vocode /code/vocode
 RUN pip install --no-cache-dir --upgrade poetry
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-dev --no-interaction --no-ansi

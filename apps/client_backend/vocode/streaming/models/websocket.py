@@ -2,6 +2,10 @@ import base64
 from enum import Enum
 from typing import Optional
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 from vocode.streaming.models.audio_encoding import AudioEncoding
 from vocode.streaming.models.client_backend import InputAudioConfig, OutputAudioConfig
 from .model import TypedModel
@@ -51,12 +55,13 @@ class StartMessage(WebSocketMessage, type=WebSocketMessageType.START):
     transcriber_config: TranscriberConfig
     agent_config: AgentConfig
     synthesizer_config: SynthesizerConfig
+    input_audio_config: InputAudioConfig
+    output_audio_config: OutputAudioConfig
     conversation_id: Optional[str] = None
+    subscribe_transcript: Optional[bool] = None
 
 
-class AudioConfigStartMessage(
-    WebSocketMessage, type=WebSocketMessageType.AUDIO_CONFIG_START
-):
+class AudioConfigStartMessage(WebSocketMessage, type=WebSocketMessageType.AUDIO_CONFIG_START):
     input_audio_config: InputAudioConfig
     output_audio_config: OutputAudioConfig
     conversation_id: Optional[str] = None

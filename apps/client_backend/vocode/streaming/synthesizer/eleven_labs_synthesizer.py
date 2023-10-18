@@ -1,5 +1,8 @@
 import asyncio
 import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 import time
 from typing import Any, AsyncGenerator, Optional, Tuple, Union
 import wave
@@ -31,7 +34,6 @@ class ElevenLabsSynthesizer(BaseSynthesizer[ElevenLabsSynthesizerConfig]):
     def __init__(
         self,
         synthesizer_config: ElevenLabsSynthesizerConfig,
-        logger: Optional[logging.Logger] = None,
         aiohttp_session: Optional[aiohttp.ClientSession] = None,
     ):
         super().__init__(synthesizer_config, aiohttp_session)
@@ -41,7 +43,9 @@ class ElevenLabsSynthesizer(BaseSynthesizer[ElevenLabsSynthesizerConfig]):
         self.elevenlabs = elevenlabs
 
         self.api_key = synthesizer_config.api_key or getenv("ELEVEN_LABS_API_KEY")
+        logger.debug(f"synthesizer_config.voice_id in ElevenLabsSynthesizer constructor: {synthesizer_config.voice_id}")
         self.voice_id = synthesizer_config.voice_id or ADAM_VOICE_ID
+        logger.debug(f"voice_id in ElevenLabsSynthesizer constructor: {self.voice_id}")
         self.stability = synthesizer_config.stability
         self.similarity_boost = synthesizer_config.similarity_boost
         self.model_id = synthesizer_config.model_id

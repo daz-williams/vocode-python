@@ -69,7 +69,7 @@ class RimeSynthesizer(BaseSynthesizer[RimeSynthesizerConfig]):
         ) as response:
             if not response.ok:
                 raise Exception(
-                    f"Rime API error: {response.status}, {await response.text()}"
+                    f"Rime API error: {response.status}, {await response.text()}, {headers}. {body}. {self.base_url}"
                 )
             data = await response.json()
             create_speech_span.end()

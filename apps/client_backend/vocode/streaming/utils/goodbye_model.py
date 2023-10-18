@@ -14,10 +14,20 @@ GOODBYE_PHRASES = [
     "goodbye",
     "see you",
     "see you later",
+    "see you soon",
     "talk to you later",
     "talk to you soon",
     "have a good day",
     "have a good night",
+    "farewell",
+    "have a good one",
+    "catch you later",
+    "adios",
+    "good night",
+    "until next time",
+    "be seeing you",
+    "au revoir",
+    "sayonara",
 ]
 
 
@@ -34,13 +44,18 @@ class GoodbyeModel:
             raise ValueError("OPENAI_API_KEY must be set in environment or passed in")
         self.embeddings_cache_path = embeddings_cache_path
         self.goodbye_embeddings: Optional[np.ndarray] = None
+        self.embeddings_initialized = asyncio.Event()
 
     async def initialize_embeddings(self):
+        print("Debug: Initializing embeddings...")
         self.goodbye_embeddings = await self.load_or_create_embeddings(
             f"{self.embeddings_cache_path}/goodbye_embeddings.npy"
         )
+        print(f"Debug: embeddings_cache_path = {self.embeddings_cache_path}")
+        self.embeddings_initialized.set()
 
     async def load_or_create_embeddings(self, path):
+        print(f"Debug: Saving/loading embeddings at {path}")
         if os.path.exists(path):
             return np.load(path)
         else:
@@ -57,9 +72,8 @@ class GoodbyeModel:
         return embeddings
 
     async def is_goodbye(self, text: str) -> bool:
+        await self.embeddings_initialized.wait()
         assert self.goodbye_embeddings is not None, "Embeddings not initialized"
-        if "bye" in text.lower():
-            return True
         embedding = await self.create_embedding(text.strip().lower())
         similarity_results = embedding @ self.goodbye_embeddings
         return np.max(similarity_results) > SIMILARITY_THRESHOLD
@@ -87,6 +101,9 @@ if __name__ == "__main__":
 
     async def main():
         model = GoodbyeModel()
+        await model.initialize_embeddings()
+        print("Initialized embeddings, waiting for a few seconds...")
+        await asyncio.sleep(3)
         while True:
             print(await model.is_goodbye(input("Text: ")))
 
