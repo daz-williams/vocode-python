@@ -30,10 +30,10 @@ logger.setLevel(logging.DEBUG)
 
 def create_synthesizer(ws_synthesizer_config):
     logger.debug(f"output_audio_config: {ws_synthesizer_config}")
-    # synthesizer_config = ElevenLabsSynthesizerConfig.from_output_audio_config(
-    #     ws_synthesizer_config
-    # )
-    # logger.debug(f"Synthesizer Config: {synthesizer_config}")
+    synthesizer_config = AzureSynthesizerConfig.from_output_audio_config(
+        ws_synthesizer_config
+    )
+    logger.debug(f"Synthesizer Config: {synthesizer_config}")
     return AzureSynthesizer(ws_synthesizer_config)
 
 def create_transcriber(ws_transcriber_config):

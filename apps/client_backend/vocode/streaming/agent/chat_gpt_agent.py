@@ -144,7 +144,7 @@ class ChatGPTAgent(RespondAgent[ChatGPTAgentConfig]):
         is_interrupt: bool = False,
     ) -> AsyncGenerator[Tuple[Union[str, FunctionCall], bool], None]:
         print("Entered generate_response()")
-        print(f"human_input: {human_input}, conversation_id: {conversation_id}, is_interrupt: {is_interrupt}")
+        print(f"human_input: {human_input}, conversation_id: {conversation_id}, is_interrupt: {is_interrupt}, agent_config.cut_off_response: {self.agent_config.cut_off_response}")
         if is_interrupt and self.agent_config.cut_off_response:
             cut_off_response = self.get_cut_off_response()
             yield cut_off_response, False

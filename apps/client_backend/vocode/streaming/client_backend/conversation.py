@@ -1,6 +1,7 @@
 import logging
 from typing import Callable, Optional
 import typing
+import time
 
 from fastapi import APIRouter, WebSocket
 from vocode.streaming.agent.base_agent import BaseAgent
@@ -91,7 +92,9 @@ class ConversationRouter(BaseRouter):
         start_message: StartMessage = StartMessage.parse_obj(
             await websocket.receive_json()
         )
-        self.logger.debug(f"Conversation started {start_message}")
+        formatted_message = str(start_message).replace(", ", ",\n")
+        self.logger.debug(f"Conversation started {formatted_message}")
+
         output_device = WebsocketOutputDevice(
             websocket,
             start_message.output_audio_config.sampling_rate,

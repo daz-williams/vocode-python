@@ -155,7 +155,7 @@ class StreamingConversation(Generic[OutputDeviceType]):
                 )
                 if self.conversation.current_transcription_is_interrupt:
                     self.conversation.logger.debug("sending interrupt")
-                self.conversation.logger.debug("Human started speaking")
+                #self.conversation.logger.debug("Human started speaking")
 
             transcription.is_interrupt = (
                 self.conversation.current_transcription_is_interrupt
@@ -286,7 +286,7 @@ class StreamingConversation(Generic[OutputDeviceType]):
                 return
             try:
                 agent_response = item.payload
-                self.conversation.logger.debug(f"agent_response: {agent_response.message.text}")
+                #self.conversation.logger.debug(f"openai_response: {agent_response.message.text}")
 
                 # ADD AURA CLASS HERE
 
@@ -311,6 +311,7 @@ class StreamingConversation(Generic[OutputDeviceType]):
 
                 #self.conversation.logger.debug("Synthesizing speech for message")
                 self.conversation.logger.debug(f"Bot Sentiment: {self.conversation.bot_sentiment}")
+                self.conversation.logger.debug(f"item.is_interruptible: {item.is_interruptible}")
                 synthesis_result = await self.conversation.synthesizer.create_speech(
                     agent_response_message.message,
                     self.chunk_size,
@@ -345,7 +346,7 @@ class StreamingConversation(Generic[OutputDeviceType]):
             try:
                 message, synthesis_result = item.payload
                 # create an empty transcript message and attach it to the transcript
-                self.conversation.logger.debug("Agent: {}".format(message.text))
+                self.conversation.logger.warning("Agent: {}".format(message.text))
                 add_transcript(self.conversation.id, "Agent: {}".format(message.text))
                 transcript_message = Message(
                     text="",
@@ -462,6 +463,7 @@ class StreamingConversation(Generic[OutputDeviceType]):
         self.transcript = Transcript()
         self.transcript.attach_events_manager(self.events_manager)
         self.bot_sentiment = None
+        print(f"self.agent.get_agent_config().track_bot_sentiment:: {self.agent.get_agent_config().track_bot_sentiment}")
         if self.agent.get_agent_config().track_bot_sentiment:
             self.sentiment_config = (
                 self.synthesizer.get_synthesizer_config().sentiment_config
@@ -524,6 +526,7 @@ class StreamingConversation(Generic[OutputDeviceType]):
         if self.synthesizer.get_synthesizer_config().sentiment_config:
             await self.update_bot_sentiment()
         self.active = True
+        print(f"self.synthesizer.get_synthesizer_config().sentiment_config: {self.synthesizer.get_synthesizer_config().sentiment_config}")
         if self.synthesizer.get_synthesizer_config().sentiment_config:
             self.track_bot_sentiment_task = asyncio.create_task(
                 self.track_bot_sentiment()

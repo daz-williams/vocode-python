@@ -44,13 +44,15 @@ class BotSentimentAnalyser:
     async def analyse(self, transcript: str) -> BotSentiment:
         prompt = self.prompt.format(transcript=transcript)
         response = (await self.llm.agenerate([prompt])).generations[0][0].text.strip()
+        print(f"Bot Sentiment: response: {response}")
+        print(f"Bot Sentiment: self.emotions: {self.emotions}")
         tokens = response.split(",")
         if len(tokens) != 2:
-            return BotSentiment(emotion=None, degree=0.0)
+            return BotSentiment(emotion="meh", degree=0.0)
         emotion, degree = tokens
         emotion = emotion.strip().lower()
         if emotion.lower() not in self.emotions:
-            return BotSentiment(emotion=None, degree=0.0)
+            return BotSentiment(emotion="grr", degree=0.0)
         try:
             parsed_degree = float(degree.strip())
         except ValueError:
